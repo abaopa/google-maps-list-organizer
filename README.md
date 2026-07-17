@@ -87,9 +87,7 @@ Edit `src/config.ts`:
 export const config = {
   // Can be a single list name, an array of list names, or 'ALL' to scan all lists
   sourceList: [
-    '2025台北米其林必比登',
-    '2024 518-520',
-    '20241120',
+    'Want to go',
   ] as string | string[],
   destList: 'Tokyo WTG',          // destination list (must exist in Maps)
   bounds: BOUNDS.tokyo,           // or set custom: { latMin, latMax, lngMin, lngMax }
