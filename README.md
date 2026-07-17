@@ -15,7 +15,7 @@ Bulk-move saved places between Google Maps lists by city.
 
 - Node.js 18+
 - pnpm
-- Google Chrome
+- Google Chrome or Microsoft Edge (Chromium-based)
 
 ## Setup
 
@@ -25,19 +25,39 @@ pnpm install
 
 ## Usage
 
-**Step 1 — Launch Chrome with remote debugging:**
-```bash
-pnpm run launch-chrome
-```
-Chrome must be fully quit first. Sign into Google Maps in the window that opens — session is saved to `.chrome-session/` for future runs.
+**Step 1 — Launch your browser with remote debugging:**
+
+Fully quit your browser first, then run the command matching your operating system and browser:
+
+| OS | Browser | Command |
+| :--- | :--- | :--- |
+| **macOS** | Google Chrome | `pnpm run launch-chrome` |
+| **macOS** | Microsoft Edge | `pnpm run launch-edge-mac` |
+| **Windows** | Microsoft Edge | `pnpm run launch-edge` |
+| **Windows** | Google Chrome | `pnpm run launch-chrome-win` |
+
+Sign into Google Maps in the window that opens. Your session will be saved in the profile directory (e.g. `.chrome-session/` or `.edge-session/`) for future runs.
 
 **Step 2 — Create your destination list** manually in Google Maps (e.g. "Tokyo WTG").
 
 **Step 3 — Extract:**
-```bash
-pnpm extract
-```
-Navigates to your source list, captures all places via the internal API, and writes:
+
+You have three options for extraction:
+
+1. **Extract configured lists** (fetches from lists configured in `src/config.ts`):
+   ```bash
+   pnpm extract
+   ```
+2. **Extract all lists** (dynamically scans and fetches from **all** of your saved lists on Google Maps):
+   ```bash
+   pnpm extract:all
+   ```
+3. **Local filter only** (runs instantly; applies the bounds filter to the cached `tmp/places.json` without launching the browser or reloading Maps):
+   ```bash
+   pnpm filter
+   ```
+
+These scripts output:
 - `tmp/places.json` — all saved places with coordinates and notes
 - `tmp/{dest-list}-places.json` — places within the configured bounding box
 
@@ -65,7 +85,12 @@ Edit `src/config.ts`:
 
 ```ts
 export const config = {
-  sourceList: 'Want to go',       // your source list name
+  // Can be a single list name, an array of list names, or 'ALL' to scan all lists
+  sourceList: [
+    '2025台北米其林必比登',
+    '2024 518-520',
+    '20241120',
+  ] as string | string[],
   destList: 'Tokyo WTG',          // destination list (must exist in Maps)
   bounds: BOUNDS.tokyo,           // or set custom: { latMin, latMax, lngMin, lngMax }
   pageSize: 500,

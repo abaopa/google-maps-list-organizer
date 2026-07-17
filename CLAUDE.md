@@ -7,13 +7,19 @@ Playwright + TypeScript CLI that bulk-organizes Google Maps saved places by city
 ## Commands
 
 ```bash
-pnpm install              # install deps
-pnpm extract              # fetch all places → tmp/places.json + tmp/{dest-list}-places.json
-pnpm move                 # move matching places to dest list
-pnpm move --limit=N       # test with N places
-pnpm move --dry-run       # navigate only, no changes
-pnpm run typecheck        # type-check without running
-pnpm run launch-chrome    # open Chrome with CDP debug port (must quit Chrome first)
+pnpm install               # install deps
+pnpm extract               # fetch places → tmp/places.json + tmp/{dest-list}-places.json
+pnpm extract:all           # fetch dynamically from all saved lists
+pnpm filter                # instantly filter cache locally by bounds
+pnpm move                  # move matching places to dest list
+pnpm move --limit=N        # test with N places
+pnpm move --dry-run        # navigate only, no changes
+pnpm run typecheck         # type-check without running
+pnpm run launch-chrome     # open Mac Chrome with CDP port (must quit Chrome first)
+pnpm run launch-chrome-win # open Windows Chrome with CDP port
+pnpm run launch-edge       # open Windows Edge with CDP port
+pnpm run launch-edge-mac   # open Mac Edge with CDP port
+pnpm run reset             # clear progress and failure cache safely
 ```
 
 ## Source files
