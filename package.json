@@ -5,11 +5,18 @@
   "packageManager": "pnpm@10.32.1",
   "scripts": {
     "extract": "tsx src/extract.ts",
+    "extract:all": "tsx src/extract.ts --all",
+    "filter": "tsx src/extract.ts --filter-only",
     "move": "tsx src/move.ts",
     "dev": "node --watch --import tsx/esm src/extract.ts",
     "typecheck": "tsc --noEmit",
-    "launch-chrome": "'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --remote-debugging-port=9222 --user-data-dir=.chrome-session --no-first-run &",
-    "reset": "rm -f tmp/progress.json tmp/failed.json && echo 'Reset: progress and failed cleared. Ready for a new city run.'"
+    "launch-chrome": "pnpm run launch-chrome-mac",
+    "launch-chrome-mac": "'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --remote-debugging-port=9222 --user-data-dir=.chrome-session --no-first-run &",
+    "launch-chrome-win": "start chrome --remote-debugging-port=9222 --user-data-dir=.chrome-session --no-first-run",
+    "launch-edge": "pnpm run launch-edge-win",
+    "launch-edge-win": "start msedge --remote-debugging-port=9222 --user-data-dir=.edge-session --no-first-run",
+    "launch-edge-mac": "'/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge' --remote-debugging-port=9222 --user-data-dir=.edge-session --no-first-run &",
+    "reset": "node -e \"const fs = require('fs'); ['tmp/progress.json', 'tmp/failed.json'].forEach(f => fs.existsSync(f) && fs.unlinkSync(f)); console.log('Reset: progress and failed cleared.')\""
   },
   "engines": {
     "node": ">=18"

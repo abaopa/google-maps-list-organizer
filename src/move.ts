@@ -59,6 +59,13 @@ async function movePlaceToList(page: Page, place: SavedPlace): Promise<boolean> 
 
   if (dryRun) return true;
 
+  const sourceLists = Array.isArray(config.sourceList)
+    ? config.sourceList
+    : [config.sourceList];
+
+  const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sourceListsRegex = new RegExp(`Saved in (${sourceLists.map(escapeRegExp).join('|')})`);
+
   // If the search returned multiple results, find and click the saved one
   const saveBtn = page.locator('button[data-value^="Saved"]');
   if (!await saveBtn.isVisible().catch(() => false)) {
@@ -73,13 +80,13 @@ async function movePlaceToList(page: Page, place: SavedPlace): Promise<boolean> 
     const resultsCount = await resultsList.count().catch(() => 0);
     if (resultsCount > 0) {
       // Find the article containing "Saved in Want to go"
-      const savedArticle = resultsList.filter({ hasText: `Saved in ${config.sourceList}` }).first();
+      const savedArticle = resultsList.filter({ hasText: sourceListsRegex }).first();
       if (await savedArticle.isVisible().catch(() => false)) {
         await savedArticle.click();
         await page.waitForTimeout(PAUSE_MS);
       } else {
         // No result is saved in our source list — place may have been deleted/renamed
-        console.log(`  ✗ No result found with "Saved in ${config.sourceList}" — skipping`);
+        console.log(`  ✗ No result found with "Saved in" any of [${sourceLists.join(', ')}] — skipping`);
         return false;
       }
     }
@@ -102,6 +109,9 @@ async function movePlaceToList(page: Page, place: SavedPlace): Promise<boolean> 
     return false;
   }
 
+  // Read initial saved value to determine what target label to wait for after saving
+  const initialSavedVal = await saveBtn.getAttribute('data-value').catch(() => 'Saved');
+
   await saveBtn.click();
   await page.waitForTimeout(PAUSE_MS);
 
@@ -122,11 +132,21 @@ async function movePlaceToList(page: Page, place: SavedPlace): Promise<boolean> 
 
   // Check current state
   const destChecked = await destItem.getAttribute('aria-checked');
-  const sourceItem0 = listItems.filter({ hasText: config.sourceList }).first();
-  const sourceChecked0 = await sourceItem0.getAttribute('aria-checked').catch(() => 'false');
+  
+  let inAnySourceList = false;
+  for (const source of sourceLists) {
+    const item = listItems.filter({ hasText: source }).first();
+    if (await item.isVisible().catch(() => false)) {
+      const checked = await item.getAttribute('aria-checked').catch(() => 'false');
+      if (checked === 'true') {
+        inAnySourceList = true;
+        break;
+      }
+    }
+  }
 
   // Already fully moved — close picker and count as success (will be added to progress)
-  if (destChecked === 'true' && sourceChecked0 !== 'true') {
+  if (destChecked === 'true' && !inAnySourceList) {
     await page.keyboard.press('Escape');
     console.log(`  (already in ${config.destList})`);
     return true;
@@ -149,8 +169,20 @@ async function movePlaceToList(page: Page, place: SavedPlace): Promise<boolean> 
     await page.waitForTimeout(PAUSE_MS);
   }
 
-  // Step 2: re-open picker — wait for button to update to "Saved (2)" then click
-  await page.waitForSelector('button[data-value="Saved (2)"]', { timeout: 5000 }).catch(() => {});
+  // Calculate target label count
+  let targetSavedVal = initialSavedVal || 'Saved';
+  if (destChecked !== 'true') {
+    const match = targetSavedVal.match(/Saved \((\d+)\)/);
+    if (match) {
+      const count = parseInt(match[1], 10);
+      targetSavedVal = `Saved (${count + 1})`;
+    } else {
+      targetSavedVal = 'Saved (2)';
+    }
+  }
+
+  // Step 2: re-open picker — wait for button to update then click
+  await page.waitForSelector(`button[data-value="${targetSavedVal}"]`, { timeout: 5000 }).catch(() => {});
   const saveBtn2 = page.locator('button[data-value^="Saved"]');
   await saveBtn2.click();
   await page.waitForTimeout(PAUSE_MS);
@@ -161,11 +193,16 @@ async function movePlaceToList(page: Page, place: SavedPlace): Promise<boolean> 
     return false;
   }
 
-  const sourceItem = listItems2.filter({ hasText: config.sourceList }).first();
-  const sourceChecked = await sourceItem.getAttribute('aria-checked').catch(() => 'false');
-  if (sourceChecked === 'true') {
-    await sourceItem.click();
-    await page.waitForTimeout(500);
+  for (const source of sourceLists) {
+    const sourceItem = listItems2.filter({ hasText: source }).first();
+    if (await sourceItem.isVisible().catch(() => false)) {
+      const sourceChecked = await sourceItem.getAttribute('aria-checked').catch(() => 'false');
+      if (sourceChecked === 'true') {
+        console.log(`  Unchecking from source: "${source}"`);
+        await sourceItem.click();
+        await page.waitForTimeout(1000);
+      }
+    }
   }
 
   await page.keyboard.press('Escape');
@@ -209,7 +246,8 @@ async function main() {
   }
 
   const browser = await chromium.connectOverCDP('http://127.0.0.1:9222').catch(() => {
-    console.error('Could not connect to Chrome. Run `pnpm run launch-chrome` first, then try again.');
+    console.error('Could not connect to the browser. Make sure Chrome or Edge is running with remote debugging on port 9222.');
+    console.error('To launch, use the appropriate command from package.json (e.g. `pnpm run launch-chrome-win` or `pnpm run launch-edge-win`).');
     process.exit(1);
   });
   const context = browser.contexts()[0];

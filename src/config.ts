@@ -16,14 +16,19 @@ export const BOUNDS = {
 
 export const config = {
   // Name of the list you're moving places FROM — must match exactly as it appears in Google Maps.
-  sourceList: 'Want to go',
+  sourceList: [
+    'Want to go',
+ 
+  ] as string | string[],
+
+
 
   // Name of the list you're moving places TO — must be created manually in Google Maps first.
-  destList: 'Japan WTG',
+  destList: 'Taiwan WTG',
 
   // Bounding box for filtering places by location. Pick a preset from BOUNDS above,
   // or define your own: { latMin, latMax, lngMin, lngMax }.
-  bounds: BOUNDS.japan,
+  bounds: BOUNDS.taiwan,
 
   // Number of places fetched per API page. 500 is the Maps maximum — no need to change this default value.
   pageSize: 500,
