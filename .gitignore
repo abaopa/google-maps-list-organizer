@@ -4,4 +4,6 @@ dist/
 tmp/
 playwright-state/
 .chrome-session/
+.edge-session/
+.DS_Store
 saved/
