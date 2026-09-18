@@ -11,11 +11,11 @@
     "dev": "node --watch --import tsx/esm src/extract.ts",
     "typecheck": "tsc --noEmit",
     "launch-chrome": "pnpm run launch-chrome-mac",
-    "launch-chrome-mac": "'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --remote-debugging-port=9222 --user-data-dir=.chrome-session --no-first-run &",
+    "launch-chrome-mac": "'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --remote-debugging-port=9222 --user-data-dir=.chrome-session --no-first-run > /dev/null 2>&1 &",
     "launch-chrome-win": "start chrome --remote-debugging-port=9222 --user-data-dir=.chrome-session --no-first-run",
     "launch-edge": "pnpm run launch-edge-win",
     "launch-edge-win": "start msedge --remote-debugging-port=9222 --user-data-dir=.edge-session --no-first-run",
-    "launch-edge-mac": "'/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge' --remote-debugging-port=9222 --user-data-dir=.edge-session --no-first-run &",
+    "launch-edge-mac": "'/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge' --remote-debugging-port=9222 --user-data-dir=.edge-session --no-first-run > /dev/null 2>&1 &",
     "reset": "node -e \"const fs = require('fs'); ['tmp/progress.json', 'tmp/failed.json'].forEach(f => fs.existsSync(f) && fs.unlinkSync(f)); console.log('Reset: progress and failed cleared.')\""
   },
   "engines": {
